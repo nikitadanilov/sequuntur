@@ -15,7 +15,7 @@ instance Show a => Show (Production a) where
   show (P l r) = showWord l ++ " -> " ++ showWord r
 
 instance Show a => Show (Grammar a) where
-  show (G ps) = concat [(show p) ++ "\n" | p <- ps]
+  show (G ps) = concat $ intersperse "\n" [(show p) | p <- ps]
 
 instance Eq a => Ord (Symbol a) where
   (<=) (T s) _     = True
@@ -86,15 +86,15 @@ collapseWith ps (q:qs) = let sub = substG (rhs q) (lhs q) . G
                             in collapseWith (nps1 ++ [q]) nps0
 
 -- returns the set of digrams in the grammar.
-digraphs :: Eq a => Grammar a -> [[Symbol a]]
-digraphs g = nub $ concat $ map 
+digrams :: Eq a => Grammar a -> [[Symbol a]]
+digrams g = nub $ concat $ map 
              (\xs -> [ xs!!i : [xs!!(i+1)] | i <- [0 .. (length xs) - 2]]) 
              (rhsG g)
 
 -- modifies the grammar by adding a new rule for any digram that occurs more
 -- than once.
 balance :: Eq a => Grammar a -> Grammar a
-balance g = balanceWith g (digraphs g)
+balance g = balanceWith g (digrams g)
 
 balanceWith :: Eq a => Grammar a -> [[Symbol a]] -> Grammar a
 balanceWith g [] = g
