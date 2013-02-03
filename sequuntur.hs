@@ -33,12 +33,31 @@ rhs (P l r) = r
 lhsG (G ps) = map lhs ps
 rhsG (G ps) = map rhs ps
 
-mapG    f (G ps)   = G $ map f ps
-mapRhsG f g        = mapG (\(P lhs rhs) -> P lhs (f rhs)) g
-applyG  f (G ps)   = G $ f ps
-addP    l r (G ps) = G $ ps ++ [(P l r)]
-as      ch         = [(T ch)]
-dropP   p          = applyG $ filter (/= p)
+-- applies given function to each production in the grammar and wrap results in
+-- a grammar.
+mapG :: (Production a -> Production a) -> Grammar a -> Grammar a
+mapG f (G ps) = G $ map f ps
+
+-- builds a new grammar to applying given function to the right-hand-sides of
+-- the original grammar.
+mapRhsG :: ([Symbol a] -> [Symbol a]) -> Grammar a -> Grammar a
+mapRhsG f g = mapG (\(P lhs rhs) -> P lhs (f rhs)) g
+
+-- applies a given function to the productions of the grammar.
+applyG :: ([Production a] -> [Production a]) -> Grammar a -> Grammar a
+applyG f (G ps) = G $ f ps
+
+-- adds a production to the grammar.
+addP :: [Symbol a] -> [Symbol a] -> Grammar a -> Grammar a
+addP l r (G ps) = G $ ps ++ [(P l r)]
+
+-- builds a word from a symbol in the alphabet.
+as :: a -> [Symbol a]
+as ch = [(T ch)]
+
+-- removes the production from a grammar
+dropP :: Eq a => Production a -> (Grammar a -> Grammar a)
+dropP p = applyG $ filter (/= p)
 
 -- returns the number of non-overlapping occurrences of the given sub-string in
 -- the string.
